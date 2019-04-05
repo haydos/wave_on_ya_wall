@@ -10,21 +10,52 @@ class forecast():
     spotID = ''
     settingsPath = ''
     units = 'uk'
-    windDirection = ''
-    windMagnitude = ''
-    swellMinHeight = ''
-    swellMaxHeight = ''
-    swellProbability = ''
-    temperature = ''
-    pressure = ''
-    gifSwell = ''
+
+    # JSON DATA
     gifPeriod = ''
-    gifWind = ''
     gifPressure = ''
-    windCompass = ''
-    swellCompass = ''
+    gifSwell = ''
+    gifWind = ''
+
+    pressure = ''
+    pressureUnits = ''
+    temperature = ''
+    temperatureUnits = ''
+    weather = ''
+
     ratingSolidStars = ''
     ratingFadedStars = ''
+
+    localTimeStampUNIX = '' #NEW
+    localTimeStamp = '' #NEW
+
+    primDirection = ''
+    primCompass = ''
+    primHeight = ''
+    primPeriod = ''
+
+    secondDirection = ''
+    secondCompass = ''
+    secondHeight = ''
+    secondPeriod = ''
+
+    tertiartyDirection = ''
+    tertiartyCompass = ''
+    tertiartyHeight = ''
+    tertiartyPeriod = ''
+
+    swellProbability = ''
+    swellUnits = ''
+
+
+    windChill = ''
+    windCompass = ''
+    windDirection = ''
+    windGusts = ''
+    windSpeed = ''
+    windUnits = ''
+
+
 
     # Class Initialiser - calls getForecast if arguments passed to it
     def __init__(self, spot_id, units='eu', local_datetime = None):
@@ -40,6 +71,11 @@ class forecast():
     @staticmethod
     def timestamp_from_datetime(dt):
         return calendar.timegm(dt.timetuple())
+
+    # Returns a DateTime instance from a UNIX timestamp
+    @staticmethod
+    def datetime_from_timestamp(ts):
+        return datetime.utcfromtimestamp(int(ts))
 
     # Returns the next available forecast timeframe as datetime.
     """ Magicseaweed provides 8 forecasts for a given day, as follows:
@@ -76,21 +112,53 @@ class forecast():
             for forecast in response.json():
                 if forecast['localTimestamp'] == local_timestamp:
                     json = forecast
+
                     self.gifPeriod = json['charts']['period']
                     self.gifPressure = json['charts']['pressure']
                     self.gifSwell = json['charts']['swell']
                     self.gifWind = json['charts']['wind']
+
                     self.pressure = json['condition']['pressure']
-                    self.swellMaxHeight = json['swell']['maxBreakingHeight']
-                    self.swellMinHeight = json['swell']['minBreakingHeight']
-                    self.swellProbability = json['swell']['probability']
                     self.temperature = json['condition']['temperature']
-                    self.windDirection = json['wind']['direction']
-                    self.windMagnitude = json['wind']['speed']
+                    self.temperatureUnits = json['condition']['unit']
+                    self.pressure = json['condition']['pressure']
+                    self.pressureUnits = json['condition']['unitPressure']
+                    self.weather = json['condition']['weather']
+
                     self.ratingSolidStars = json['solidRating']
                     self.ratingFadedStars = json['fadedRating']
+
+                    self.localTimeStampUNIX = json['localTimestamp']
+                    self.localTimeStamp = self.datetime_from_timestamp(self.localTimeStampUNIX)
+
+                    self.primCompass = json['swell']['components']['primary']['compassDirection']
+                    self.primDirection = json['swell']['components']['primary']['direction']
+                    self.primHeight = json['swell']['components']['primary']['height']
+                    self.primPeriod = json['swell']['components']['primary']['period']
+
+                    try:
+                        self.secondCompass = json['swell']['components']['secondary']['compassDirection']
+                        self.secondDirection = json['swell']['components']['secondary']['direction']
+                        self.secondHeight = json['swell']['components']['secondary']['height']
+                        self.secondPeriod = json['swell']['components']['secondary']['period']
+                    except:
+                        pass
+
+                    try:
+                        self.tertiartyCompass = json['swell']['components']['tertiary']['compassDirection']
+                        self.tertiartyDirection = json['swell']['components']['tertiary']['direction']
+                        self.tertiartyHeight = json['swell']['components']['tertiary']['height']
+                        self.tertiartyPeriod = json['swell']['components']['tertiary']['period']
+                    except:
+                        pass
+
+                    self.windChill = json['wind']['chill']
                     self.windCompass = json['wind']['compassDirection']
-                    self.swellCompass = json['swell']['components']['primary']['compassDirection']
+                    self.windDirection = json['wind']['direction']
+                    self.windGusts = json['wind']['gusts']
+                    self.windSpeed = json['wind']['speed']
+                    self.windUnits = json['wind']['unit']
+
                     return forecast
             return None
         return json
